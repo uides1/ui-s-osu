@@ -68,17 +68,11 @@ namespace osu.Game.Rulesets.Catch.UI
             };
         }
 
-        public void OnNewResult(DrawableCatchHitObject hitObject, JudgementResult result)
-        {
-            Catcher.OnNewResult(hitObject, result);
-            comboDisplay.OnNewResult(hitObject, result);
-        }
+        public void OnNewResult(DrawableCatchHitObject judgedObject, JudgementResult result) =>
+            Catcher?.OnNewResult(judgedObject, result);
 
-        public void OnRevertResult(JudgementResult result)
-        {
-            comboDisplay.OnRevertResult(result);
-            Catcher.OnRevertResult(result);
-        }
+        public void OnRevertResult(JudgementResult result) =>
+            Catcher?.OnRevertResult(result);
 
         protected override void Update()
         {
