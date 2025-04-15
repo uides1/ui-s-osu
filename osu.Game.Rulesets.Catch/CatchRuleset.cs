@@ -32,7 +32,6 @@ using osu.Game.Rulesets.UI;
 using osu.Game.Scoring;
 using osu.Game.Screens.Edit.Setup;
 using osu.Game.Screens.Ranking.Statistics;
-using osu.Game.Screens.Ranking.Expanded.Statistics;
 using osu.Game.Skinning;
 using osuTK;
 
@@ -188,15 +187,14 @@ namespace osu.Game.Rulesets.Catch
         {
             switch (result)
             {
-                case HitResult.Great:
-                    return "Fruits";
-
                 case HitResult.LargeTickHit:
-                case HitResult.LargeBonus:
-                    return "Droplets";
+                    return "Large droplet";
 
                 case HitResult.SmallTickHit:
-                    return "Tiny Droplets";
+                    return "Small droplet";
+
+                case HitResult.LargeBonus:
+                    return "Banana";
             }
 
             return base.GetDisplayNameForHitResult(result);
@@ -256,18 +254,8 @@ namespace osu.Game.Rulesets.Catch
 
         public override StatisticItem[] CreateStatisticsForScore(ScoreInfo score, IBeatmap playableBeatmap)
         {
-            int totalFruits = score.Statistics.GetValueOrDefault(HitResult.Great, 0);
-            int totalDroplets = score.Statistics.GetValueOrDefault(HitResult.LargeTickHit, 0) +
-                              score.Statistics.GetValueOrDefault(HitResult.SmallTickHit, 0);
-            int totalCaughtFruits = totalFruits - score.Statistics.GetValueOrDefault(HitResult.Miss, 0);
-            int totalCaughtDroplets = totalDroplets -
-                                    score.Statistics.GetValueOrDefault(HitResult.LargeTickMiss, 0) -
-                                    score.Statistics.GetValueOrDefault(HitResult.SmallTickMiss, 0);
-
             return new[]
             {
-                new StatisticItem("Fruits Caught", () => new CounterStatistic($"{totalCaughtFruits}/{totalFruits} Fruits", totalCaughtFruits, totalFruits)),
-                new StatisticItem("Droplets", () => new CounterStatistic("Droplets", totalCaughtDroplets, totalDroplets)),
                 new StatisticItem("Performance Breakdown", () => new PerformanceBreakdownChart(score, playableBeatmap)
                 {
                     RelativeSizeAxes = Axes.X,

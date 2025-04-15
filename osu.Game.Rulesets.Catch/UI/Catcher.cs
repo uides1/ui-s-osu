@@ -10,7 +10,6 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Pooling;
-using osu.Framework.Testing;
 using osu.Framework.Utils;
 using osu.Game.Beatmaps;
 using osu.Game.Configuration;
@@ -96,8 +95,6 @@ namespace osu.Game.Rulesets.Catch.UI
         /// </summary>
         private readonly DroppedObjectContainer droppedObjectTarget;
 
-        private readonly BackgroundDisplay backgroundDisplay;
-
         public CatcherAnimationState CurrentState
         {
             get => body.AnimationState.Value;
@@ -137,10 +134,9 @@ namespace osu.Game.Rulesets.Catch.UI
         private readonly DrawablePool<CaughtBanana> caughtBananaPool;
         private readonly DrawablePool<CaughtDroplet> caughtDropletPool;
 
-        public Catcher(DroppedObjectContainer droppedObjectTarget, IBeatmapDifficultyInfo? difficulty = null, BackgroundDisplay? backgroundDisplay = null)
+        public Catcher(DroppedObjectContainer droppedObjectTarget, IBeatmapDifficultyInfo? difficulty = null)
         {
             this.droppedObjectTarget = droppedObjectTarget;
-            this.backgroundDisplay = backgroundDisplay;
 
             Origin = Anchor.TopCentre;
 
@@ -226,17 +222,6 @@ namespace osu.Game.Rulesets.Catch.UI
 
                 if (hitLighting.Value)
                     addLighting(result, drawableObject.AccentColour.Value, positionInStack.X);
-
-                // Handle background fragment collection
-                if (backgroundDisplay != null)
-                {
-                    var fragment = palpableObject.ChildrenOfType<BackgroundFragment>().FirstOrDefault();
-                    if (fragment.FragmentTexture != null)
-                    {
-                        var bounds = fragment.FragmentBounds.Value;
-                        backgroundDisplay.CollectFragment(bounds.X, bounds.Y, bounds.Width);
-                    }
-                }
             }
 
             // droplet doesn't affect the catcher state

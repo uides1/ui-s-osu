@@ -4,7 +4,6 @@
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Testing;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Catch.Objects.Drawables;
@@ -13,7 +12,6 @@ using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.UI;
 using osu.Game.Rulesets.UI.Scrolling;
 using osuTK;
-using System.Linq;
 
 namespace osu.Game.Rulesets.Catch.UI
 {
@@ -40,11 +38,9 @@ namespace osu.Game.Rulesets.Catch.UI
             // only check the X position; handle all vertical space.
             base.ReceivePositionalInputAt(new Vector2(screenSpacePos.X, ScreenSpaceDrawQuad.Centre.Y));
 
-        public readonly Catcher Catcher;
+        internal Catcher Catcher { get; private set; } = null!;
 
-        public readonly CatcherArea CatcherArea;
-
-        private readonly BackgroundDisplay backgroundDisplay;
+        internal CatcherArea CatcherArea { get; private set; } = null!;
 
         public Container UnderlayElements { get; private set; } = null!;
 
@@ -53,32 +49,6 @@ namespace osu.Game.Rulesets.Catch.UI
         public CatchPlayfield(IBeatmapDifficultyInfo difficulty)
         {
             this.difficulty = difficulty;
-
-            AddRangeInternal(new Drawable[]
-            {
-                backgroundDisplay = new BackgroundDisplay(),
-                new Container
-                {
-                    RelativeSizeAxes = Axes.Both,
-                    Children = new[]
-                    {
-                        CatcherArea = new CatcherArea
-                        {
-                            Name = "Catcher Area",
-                            RelativeSizeAxes = Axes.Both,
-                        }
-                    }
-                },
-                HitObjectContainer,
-            });
-
-            var droppedObjectContainer = new DroppedObjectContainer();
-            Catcher = new Catcher(droppedObjectContainer, difficulty, backgroundDisplay)
-            {
-                X = CatchPlayfield.CENTER_X
-            };
-            CatcherArea.Add(Catcher);
-            CatcherArea.Add(droppedObjectContainer);
         }
 
         protected override GameplayCursorContainer CreateCursor() => new CatchCursorContainer();
@@ -86,10 +56,32 @@ namespace osu.Game.Rulesets.Catch.UI
         [BackgroundDependencyLoader]
         private void load()
         {
-            UnderlayElements = new Container
+            var droppedObjectContainer = new DroppedObjectContainer();
+
+            Catcher = new Catcher(droppedObjectContainer, difficulty)
             {
-                RelativeSizeAxes = Axes.Both,
+                X = CENTER_X
             };
+
+            AddRangeInternal(new[]
+            {
+                UnderlayElements = new Container
+                {
+                    RelativeSizeAxes = Axes.Both,
+                },
+                droppedObjectContainer,
+                Catcher.CreateProxiedContent(),
+                HitObjectContainer.CreateProxy(),
+                // This ordering (`CatcherArea` before `HitObjectContainer`) is important to
+                // make sure the up-to-date catcher position is used for the catcher catching logic of hit objects.
+                CatcherArea = new CatcherArea
+                {
+                    Anchor = Anchor.BottomLeft,
+                    Origin = Anchor.TopLeft,
+                    Catcher = Catcher,
+                },
+                HitObjectContainer,
+            });
 
             RegisterPool<Droplet, DrawableDroplet>(50);
             RegisterPool<TinyDroplet, DrawableTinyDroplet>(50);
@@ -108,24 +100,12 @@ namespace osu.Game.Rulesets.Catch.UI
             RevertResult += onRevertResult;
         }
 
-        public override void Add(DrawableHitObject h)
+        protected override void OnNewDrawableHitObject(DrawableHitObject d)
         {
-            var drawnObject = (DrawableCatchHitObject)h;
-            drawnObject.CheckPosition = (catchHitObject) => Catcher.CanCatch(catchHitObject);
-
-            // Register the fragment if it's a fruit or droplet
-            if (h is DrawablePalpableCatchHitObject palpable)
-            {
-                var fragment = palpable.ChildrenOfType<BackgroundFragment>().FirstOrDefault();
-                if (fragment.FragmentTexture != null)
-                {
-                    var bounds = fragment.FragmentBounds.Value;
-                    backgroundDisplay.RegisterFragment(bounds.X, bounds.Y, bounds.Width);
-                }
-            }
-
-            base.Add(h);
+            ((DrawableCatchHitObject)d).CheckPosition = checkIfWeCanCatch;
         }
+
+        private bool checkIfWeCanCatch(CatchHitObject obj) => Catcher.CanCatch(obj);
 
         private void onNewResult(DrawableHitObject judgedObject, JudgementResult result)
             => CatcherArea.OnNewResult((DrawableCatchHitObject)judgedObject, result);
