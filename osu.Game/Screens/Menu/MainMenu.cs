@@ -35,8 +35,6 @@ using osu.Game.Rulesets;
 using osu.Game.Screens.Backgrounds;
 using osu.Game.Screens.Edit;
 using osu.Game.Screens.OnlinePlay.DailyChallenge;
-using osu.Game.Screens.OnlinePlay.Multiplayer;
-using osu.Game.Screens.OnlinePlay.Playlists;
 using osu.Game.Screens.Select;
 using osu.Game.Seasonal;
 using osuTK;
@@ -150,8 +148,6 @@ namespace osu.Game.Screens.Menu
                                 skinEditor?.Show();
                             },
                             OnSolo = loadSoloSongSelect,
-                            OnMultiplayer = () => this.Push(new Multiplayer()),
-                            OnPlaylists = () => this.Push(new Playlists()),
                             OnDailyChallenge = room =>
                             {
                                 if (statics.Get<bool>(Static.DailyChallengeIntroPlayed))

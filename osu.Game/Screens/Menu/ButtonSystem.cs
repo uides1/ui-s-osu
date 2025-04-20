@@ -45,8 +45,6 @@ namespace osu.Game.Screens.Menu
         public Action? OnBeatmapListing;
         public Action? OnSolo;
         public Action? OnSettings;
-        public Action? OnMultiplayer;
-        public Action? OnPlaylists;
         public Action<Room>? OnDailyChallenge;
 
         private readonly IBindable<bool> isIdle = new BindableBool();
@@ -136,8 +134,6 @@ namespace osu.Game.Screens.Menu
             {
                 Padding = new MarginPadding { Left = WEDGE_WIDTH },
             });
-            buttonsPlay.Add(new MainMenuButton(ButtonSystemStrings.Multi, @"button-default-select", OsuIcon.Online, new Color4(94, 63, 186, 255), onMultiplayer, Key.M));
-            buttonsPlay.Add(new MainMenuButton(ButtonSystemStrings.Playlists, @"button-default-select", OsuIcon.Tournament, new Color4(94, 63, 186, 255), onPlaylists, Key.L));
             buttonsPlay.Add(new DailyChallengeButton(@"button-daily-select", new Color4(94, 63, 186, 255), onDailyChallenge, Key.D));
             buttonsPlay.ForEach(b => b.VisibleState = ButtonSystemState.Play);
 
@@ -148,7 +144,7 @@ namespace osu.Game.Screens.Menu
             buttonsEdit.Add(new MainMenuButton(SkinEditorStrings.SkinEditor.ToLower(), @"button-default-select", OsuIcon.SkinB, new Color4(220, 160, 0, 255), (_, _) => OnEditSkin?.Invoke(), Key.S));
             buttonsEdit.ForEach(b => b.VisibleState = ButtonSystemState.Edit);
 
-            buttonsTopLevel.Add(new MainMenuButton(ButtonSystemStrings.Play, @"button-play-select", OsuIcon.Logo, new Color4(102, 68, 204, 255), (_, _) => State = ButtonSystemState.Play, Key.P, Key.M, Key.L)
+            buttonsTopLevel.Add(new MainMenuButton(ButtonSystemStrings.Play, @"button-play-select", OsuIcon.Logo, new Color4(102, 68, 204, 255), (_, _) => State = ButtonSystemState.Play, Key.P)
             {
                 Padding = new MarginPadding { Left = WEDGE_WIDTH },
             });
@@ -177,28 +173,6 @@ namespace osu.Game.Screens.Menu
 
             sampleBackToLogo = audio.Samples.Get(@"Menu/back-to-logo");
             sampleLogoSwoosh = audio.Samples.Get(@"Menu/osu-logo-swoosh");
-        }
-
-        private void onMultiplayer(MainMenuButton mainMenuButton, UIEvent uiEvent)
-        {
-            if (api.State.Value != APIState.Online)
-            {
-                loginOverlay?.Show();
-                return;
-            }
-
-            OnMultiplayer?.Invoke();
-        }
-
-        private void onPlaylists(MainMenuButton mainMenuButton, UIEvent uiEvent)
-        {
-            if (api.State.Value != APIState.Online)
-            {
-                loginOverlay?.Show();
-                return;
-            }
-
-            OnPlaylists?.Invoke();
         }
 
         private void onDailyChallenge(MainMenuButton button, UIEvent uiEvent)
